@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.color.block.BlockColors;
@@ -22,7 +23,8 @@ import net.minecraft.world.BlockRenderView;
 @Mixin(targets = "net/optifine/CustomColors", remap = false)
 abstract class CustomColoursMixin {
 	@Group(name = "customColorsMixins", min = 1, max = 1)
-	@Inject(method = "getColorMultiplier(ZLnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/util/math/BlockPos;Lnet/optifine/render/RenderEnv;)I", cancellable = true, remap = true,
+	@Inject(method = "getColorMultiplier(ZLnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/util/math/BlockPos;Lnet/optifine/render/RenderEnv;)I",
+			cancellable = true, remap = true, locals = LocalCapture.CAPTURE_FAILSOFT,
 			at = @At(value = "FIELD", target = "Lnet/minecraft/block/Blocks;LILY_PAD:Lnet/minecraft/block/Block;", opcode = Opcodes.GETSTATIC, remap = true))
 	private static void skip(boolean quadHasTintIndex, BlockState blockState, BlockRenderView blockAccess, BlockPos blockPos, @Coerce Object renderEnv, CallbackInfoReturnable<Integer> call) {
 		if (!"minecraft".equals(Registry.BLOCK.getId(blockState.getBlock()).getNamespace())) {
@@ -31,7 +33,7 @@ abstract class CustomColoursMixin {
 	}
 
 	@Group(name = "customColorsMixins", min = 1, max = 1)
-	@Inject(method = "getColorMultiplier", cancellable = true,
+	@Inject(method = "getColorMultiplier", cancellable = true, locals = LocalCapture.CAPTURE_FAILSOFT,
 			at = @At(value = "FIELD", target = "Lnet/minecraft/block/Blocks;LILY_PAD:Lnet/minecraft/block/Block;", opcode = Opcodes.GETSTATIC, remap = true))
 	private static void skipOld(BakedQuad quad, BlockState state, BlockRenderView world, BlockPos pos, @Coerce Object renderEnv, CallbackInfoReturnable<Integer> call) {
 		if (!"minecraft".equals(Registry.BLOCK.getId(state.getBlock()).getNamespace()) && getBlockColors().getColor(state, world, pos, quad.getColorIndex()) == -1) {
